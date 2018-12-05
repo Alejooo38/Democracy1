@@ -1,0 +1,103 @@
+﻿@model Democracy1.Models.Vouting
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>Vouting</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.State.Description)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.State.Description)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Description)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Description)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Remarks)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Remarks)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.DateTimeStart)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.DateTimeStart)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.DateTimeEnd)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.DateTimeEnd)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.IsForAllUser)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.IsForAllUser)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.IsEnableBlankVote)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.IsEnableBlankVote)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.QuantityVotes)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.QuantityVotes)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.QuantityBlankVotes)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.QuantityBlankVotes)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.CandidateWinId)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.CandidateWinId)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.VoutingId }, new {@class = "btn btn-primary" })
+    @if (!Model.IsForAllUser)
+    {
+        @Html.ActionLink("Add Group", "Add member", new { id = Model.VoutingId }, new { @class = "btn btn-warning" })
+    }    
+    @Html.ActionLink("Add Candidate", "Add Candidate", new { id = Model.VoutingId }, new { @class = "btn btn-info" })
+    @Html.ActionLink("Back to List", "Index", new {@class = "btn btn-success" })
+</p>
