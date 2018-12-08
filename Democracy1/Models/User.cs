@@ -71,5 +71,8 @@ namespace Democracy1.Models
         public string Photo { get; set; }
 
         public virtual ICollection<GroupMember> GroupMembers { get; set; }
+
+        public virtual ICollection<User> Users { get; set; }
+
     }
 }

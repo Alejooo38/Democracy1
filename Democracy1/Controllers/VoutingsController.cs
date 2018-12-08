@@ -15,6 +15,134 @@ namespace Democracy1.Controllers
     {
         private DemocracyContext db = new DemocracyContext();
 
+
+        public ActionResult DeleteGroup(int id)
+        {
+            var votingGroup = db.VoutingGroups.Find(id);
+
+            if (votingGroup != null)
+            {
+                db.VoutingGroups.Remove(votingGroup);
+                db.SaveChanges();
+            }
+
+            return RedirectToAction(string.Format("Details/{0}", votingGroup.VoutingId));
+        }
+
+        public ActionResult DeleteCandidate(int id)
+        {
+            var candidate = db.Candidates.Find(id);
+
+            if (candidate != null)
+            {
+                db.Candidates.Remove(candidate);
+                db.SaveChanges();
+            }
+
+            return RedirectToAction(string.Format("Details/{0}", candidate.VoutingId));
+        }
+
+        public ActionResult AddCandidate(int id)
+        {
+            var view = new AddCandidateView
+            {
+                VoutingId = id,
+            };
+
+            ViewBag.UserId = new SelectList(db.Users
+                .OrderBy(u => u.FirstName)
+                .ThenBy(u => u.LastName), 
+                "UserId", "FullName");
+
+            return View(view);
+        }
+
+        [HttpPost]
+        public ActionResult AddCandidate(AddCandidateView view)
+        {
+            if (ModelState.IsValid)
+            {
+                var Candidate = db.Candidates
+                    .Where(c => c.VoutingId == view.VoutingId &&
+                                c.UserId == view.UserId)
+                    .FirstOrDefault();
+
+                if (Candidate != null)
+                {
+                    ModelState.AddModelError(string.Empty, 
+                        "The Candidate already belongs to vouting.");
+                    ViewBag.UserId = new SelectList(db.Users
+                .OrderBy(u => u.FirstName)
+                .ThenBy(u => u.LastName),
+                "UserId", "FullName");
+                    return View(view);
+                }
+
+                Candidate = new Candidate
+                {
+                    UserId = view.UserId,
+                    VoutingId = view.VoutingId,
+                };
+
+                db.Candidates.Add(Candidate);
+                db.SaveChanges();
+                return RedirectToAction(string.Format("Details/{0}", view.VoutingId));
+            }
+
+            ViewBag.UserId = new SelectList(db.Users
+               .OrderBy(u => u.FirstName)
+               .ThenBy(u => u.LastName),
+               "UserId", "FullName");
+            return View(view);
+        }
+
+        public ActionResult AddGroup(int id)
+        {
+            ViewBag.GroupId = new SelectList(db.Groups.OrderBy
+                (g => g.Description), "GroupId", "Description");
+
+            var view = new AddGroupView
+            {
+               VoutingId = id,
+            };
+            return View(view);
+        }
+
+        [HttpPost]
+        public ActionResult AddGroup(AddGroupView view)
+        {
+            if (ModelState.IsValid)
+            {
+                var voutingGroup = db.VoutingGroups
+                    .Where(vg => vg.VoutingId == view.VoutingId &&
+                                 vg.GroupId == view.GroupId)
+                    .FirstOrDefault();
+
+                if (voutingGroup != null)
+                {
+                    ModelState.AddModelError(string.Empty, "The Group already belongs to vouting.");
+                    ViewBag.Error = "The Group already belongs to vouting";
+                    ViewBag.GroupId = new SelectList(db.Groups.OrderBy
+                        (g => g.Description), "GroupId", "Description");
+                    return View(view);
+                }
+
+                voutingGroup = new VoutingGroup
+                {
+                    GroupId = view.GroupId,
+                    VoutingId = view.VoutingId,
+                };
+
+                db.VoutingGroups.Add(voutingGroup);
+                db.SaveChanges();
+                return RedirectToAction(string.Format("Details/{0}", view.VoutingId));
+            }
+
+            ViewBag.GroupId = new SelectList(db.Groups.OrderBy
+                (g => g.Description), "GroupId", "Description");
+            return View(view);
+        }
+
         // GET: Voutings
         public ActionResult Index()
         {
@@ -34,14 +162,36 @@ namespace Democracy1.Controllers
             {
                 return HttpNotFound();
             }
-            return View(vouting);
+
+            var view = new DetailsVotingView
+            {
+                Candidates     =        vouting.Candidates.ToList(),
+                CandidateWinId =        vouting.CandidateWinId,
+                DateTimeStart  =        vouting.DateTimeStart,
+                DateTimeEnd    =        vouting.DateTimeEnd,
+                Description    =        vouting.Description,
+                IsEnableBlankVote=      vouting.IsEnableBlankVote,
+                IsForAllUser   =        vouting.IsForAllUser,
+                QuantityBlankVotes=     vouting.QuantityBlankVotes,
+                QuantityVotes  =        vouting.QuantityVotes,
+                Remarks        =        vouting.Remarks,
+                StateId        =        vouting.StateId,
+                VoutingGroups  =        vouting.VoutingGroups.ToList(),
+                VoutingId      =        vouting.VoutingId  
+            };
+            return View(view);
         }
 
         // GET: Voutings/Create
         public ActionResult Create()
         {
             ViewBag.StateId = new SelectList(db.States, "StateId", "Description");
-            return View();
+            var view = new VoutingView
+            {
+                DateStart = DateTime.Now,
+                DateEnd = DateTime.Now
+            };
+            return View(view);
         }
 
         // POST: Voutings/Create
@@ -49,17 +199,33 @@ namespace Democracy1.Controllers
         // más información vea http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "VoutingId,Description,StateId,Remarks,DateTimeStart,DateTimeEnd,IsForAllUser,IsEnableBlankVote,QuantityVotes,QuantityBlankVotes,CandidateWinId")] Vouting vouting)
+        public ActionResult Create(VoutingView view)
         {
             if (ModelState.IsValid)
             {
+                var vouting = new Vouting
+                {
+                    DateTimeEnd = view.DateEnd.AddHours
+                    (view.TimeEnd.Hour).AddMinutes
+                    (view.TimeEnd.Minute),
+
+                    DateTimeStart = view.DateStart.AddHours
+                    (view.TimeStart.Hour).AddMinutes
+                    (view.TimeStart.Minute),
+                    Description = view.Description,
+                    IsEnableBlankVote = view.IsEnableBlankVote,
+                    IsForAllUser = view.IsForAllUser,
+                    Remarks = view.Remarks,
+                    StateId = view.StateId,                    
+                };
+
                 db.Voutings.Add(vouting);
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
 
-            ViewBag.StateId = new SelectList(db.States, "StateId", "Description", vouting.StateId);
-            return View(vouting);
+            ViewBag.StateId = new SelectList(db.States, "StateId", "Description", view.StateId);
+            return View(view);
         }
 
         // GET: Voutings/Edit/5
@@ -74,8 +240,23 @@ namespace Democracy1.Controllers
             {
                 return HttpNotFound();
             }
+
+            var view = new VoutingView
+            {
+                DateEnd = vouting.DateTimeEnd,
+                DateStart = vouting.DateTimeStart,
+                Description = vouting.Description,
+                IsEnableBlankVote = vouting.IsEnableBlankVote,
+                IsForAllUser = vouting.IsForAllUser,
+                Remarks = vouting.Remarks,
+                StateId = vouting.StateId,
+                TimeEnd = vouting.DateTimeEnd,
+                TimeStart = vouting.DateTimeStart,
+                VoutingId = vouting.VoutingId,
+            };
+
             ViewBag.StateId = new SelectList(db.States, "StateId", "Description", vouting.StateId);
-            return View(vouting);
+            return View(view);
         }
 
         // POST: Voutings/Edit/5
@@ -83,16 +264,33 @@ namespace Democracy1.Controllers
         // más información vea http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "VoutingId,Description,StateId,Remarks,DateTimeStart,DateTimeEnd,IsForAllUser,IsEnableBlankVote,QuantityVotes,QuantityBlankVotes,CandidateWinId")] Vouting vouting)
+        public ActionResult Edit(VoutingView view)
         {
             if (ModelState.IsValid)
             {
+                var vouting = new Vouting
+                {
+                    DateTimeEnd = view.DateEnd.AddHours
+                    (view.TimeEnd.Hour).AddMinutes
+                    (view.TimeEnd.Minute),
+
+                    DateTimeStart = view.DateStart.AddHours
+                    (view.TimeStart.Hour).AddMinutes
+                    (view.TimeStart.Minute),
+                    Description = view.Description,
+                    IsEnableBlankVote = view.IsEnableBlankVote,
+                    IsForAllUser = view.IsForAllUser,
+                    Remarks = view.Remarks,
+                    StateId = view.StateId,
+                    VoutingId = view.VoutingId,
+                };
+
                 db.Entry(vouting).State = EntityState.Modified;
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
-            ViewBag.StateId = new SelectList(db.States, "StateId", "Description", vouting.StateId);
-            return View(vouting);
+            ViewBag.StateId = new SelectList(db.States, "StateId", "Description", view.StateId);
+            return View(view);
         }
 
         // GET: Voutings/Delete/5

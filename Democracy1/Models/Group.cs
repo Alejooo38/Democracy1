@@ -23,5 +23,6 @@ namespace Democracy1.Models
 
             public virtual ICollection<GroupMember> GroupMembers{ get; set; }
 
+        public virtual ICollection<VoutingGroup> VoutingGroups { get; set; }
     }
     }
