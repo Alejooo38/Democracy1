@@ -10,7 +10,7 @@ using Democracy1.Models;
 
 namespace Democracy1.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public class VoutingsController : Controller
     {
         private DemocracyContext db = new DemocracyContext();

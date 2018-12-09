@@ -8,7 +8,7 @@ using System.Web.Mvc;
 
 namespace Democracy1.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public class StatesController : Controller
     {
 

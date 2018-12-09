@@ -96,9 +96,9 @@
     @Html.ActionLink("Edit", "Edit", new { id = Model.VoutingId }, new {@class = "btn btn-primary" })
     @if (!Model.IsForAllUser)
     {
-        @Html.ActionLink("AddGroup", "AddGroup", new { id = Model.VoutingId }, new { @class = "btn btn-warning" })
+        @Html.ActionLink("AddGroup", "Add Group", new { id = Model.VoutingId }, new { @class = "btn btn-warning" })
     }    
-    @Html.ActionLink("AddCandidate", "AddCandidate", new { id = Model.VoutingId }, new { @class = "btn btn-info" })
+    @Html.ActionLink("AddCandidate", "Add Candidate", new { id = Model.VoutingId }, new { @class = "btn btn-info" })
     @Html.ActionLink("Back to List", "Index", new { },  new {@class = "btn btn-success"})
 </p>
 
